@@ -10,7 +10,9 @@ namespace dotnet_waffle {
         public static void Main(string[] args)
         {
             try {
-                var pkgtemplate = CreateTemplateFromPackage("DotnetSampleConsoleApp", "1.0.0", "microsoft.dotnet.console.rc2");
+                
+
+                var pkgtemplate = GetTemplateFromPackage("DotnetSampleConsoleApp", "1.0.0", "microsoft.dotnet.console.rc2");
                 if(pkgtemplate != null) {
                     string targetfolder = @"c:\temp\dn-waffle\frompkg";
                     if (!string.IsNullOrWhiteSpace(targetfolder) && Directory.Exists(targetfolder)) {
@@ -30,6 +32,14 @@ namespace dotnet_waffle {
                 }
                 var creator = new TemplateCreator();
                 creator.CreateProject(template, destFolder, "MyNewProject", null);
+
+                string giturl = @"https://github.com/sayedihashimi/dotnet-waffle.git";
+                string gitbranch = "master";
+                string templatename = "microsoft.dotnet.console.rc2";
+                template = GetTemplateFromGit(giturl, gitbranch, templatename);
+                destFolder = @"C:\temp\dn-waffle\gitconsole";
+                if (!string.IsNullOrWhiteSpace(destFolder) && Directory.Exists(destFolder)) { Directory.Delete(destFolder, true); }
+                creator.CreateProject(template, destFolder, "MyNewConsoleProject", null);
 
                 var manager = new TemplateSourceManager();
                 var settingsFile = @"C:\temp\dn-waffle\settings.json";
@@ -52,7 +62,20 @@ namespace dotnet_waffle {
             Console.ReadLine();
         }
 
-        private static Template CreateTemplateFromPackage(string packageName,string packageVersion, string templateName) {
+        private static Template GetTemplateFromGit(string gitUrl, string gitBranch, string templateName) {
+            var templates = new TemplateManager().GetTemplatesFromGit(gitUrl, gitBranch);
+            Template result = (from t in templates
+                               where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)
+                               select t).FirstOrDefault();
+            if (result == null) {
+                Console.WriteLine(string.Format("Template not found [url=[{0}]],branch=[{1}],template-name=[{2}] ", gitUrl, gitBranch, templateName));
+                return null;
+            }
+
+            return result;
+        }
+
+        private static Template GetTemplateFromPackage(string packageName,string packageVersion, string templateName) {
             List<Template> pkgTemplates = new TemplateManager().GetTemplatesFromPackage(packageName, packageVersion).ToList();
             Template result = (from t in pkgTemplates
                                where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)

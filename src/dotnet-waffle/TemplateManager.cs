@@ -5,9 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace dotnet_waffle {
-    public class TemplateManager {
-        private IList<Template> templates { get; set; }
-
+    public class TemplateManager {        
         public IEnumerable<Template> GetTemplatesFromFolder(string folderPath, bool recurse, string filePattern = "waffle*.json") {
             List<Template> templates = new List<Template>();
 
@@ -35,15 +33,10 @@ namespace dotnet_waffle {
             string pkgPath = Helper.RestorePackage(packageName, packageVersion);
             return GetTemplatesFromFolder(pkgPath, true);
         }
-
-        public Template AddTemplate(string filePath) {
-            var template = Template.BuildFromFile(filePath);
-            templates.Add(template);
-            return template;
-        }
-
-        public IEnumerable<Template> GetTemplates() {
-            return templates;
+        
+        public IEnumerable<Template>GetTemplatesFromGit(string gitUri,string branchName) {
+            string gitpath = Helper.EnsureGitIsClonedLocally(gitUri, branchName);
+            return GetTemplatesFromFolder(gitpath, true);
         }
     }
 }

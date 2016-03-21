@@ -205,11 +205,16 @@ namespace dotnet_waffle
             if (template == null) { throw new ArgumentNullException(nameof(template)); }
 
             if(template.Source.Type == SourceType.Git) {
-                throw new NotImplementedException();
+                string giturl = template.Source.GitUrl.AbsoluteUri;
+                string gitbranch = template.Source.GitBranch;
+                string path = Helper.EnsureGitIsClonedLocally(giturl, gitbranch);
+                if (!Directory.Exists(path)) {
+                    throw new InvalidOperationException(string.Format("Unable to get template from git [url={0},branch={1}]", giturl, gitbranch));
+                }
+                template.Source.SourceFolder = path;
             }
-
-            // if it's a package then make sure the package is restored and then add template files from there
-            if(template.Source.Type == SourceType.Package) {
+            else if(template.Source.Type == SourceType.Package) {
+                // if it's a package then make sure the package is restored and then add template files from there
                 string expectedPackagePath = Path.Combine(Helper.GetNuGetPackagesPath(), template.Source.PackageName, template.Source.PackageVersion);
                 if (!Directory.Exists(expectedPackagePath)) {
                     Helper.RestorePackage(template.Source.PackageName, template.Source.PackageVersion);

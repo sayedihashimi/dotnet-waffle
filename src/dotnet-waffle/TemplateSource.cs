@@ -27,8 +27,8 @@ namespace dotnet_waffle
         public string PackageVersion { get; set; }
 
         // only used if SourceType == git
-        protected Uri GitUrl { get; set; }
-        protected string GitBranch { get; set; }
+        public Uri GitUrl { get; set; }
+        public string GitBranch { get; set; }
         
         public static TemplateSource NewFolderSource(string path) {
             return new TemplateSource() {

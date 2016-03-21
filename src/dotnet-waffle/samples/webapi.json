@@ -1,0 +1,42 @@
+{
+  "Name": "microsoft.aspnet.web.empty.rc1",
+  "Type": "ProjectTemplate",
+  "CreateNewFolder": true,
+  "Alias": [
+    "empty-web"
+  ],
+  "Replacements": [
+    {
+      "Key": "WebApiProject",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyWebProject"
+    },
+    {
+      "Key": "..\\..\\artifacts",
+      "Value": "$Artifacts",
+      "DefaultValue": "..\\..\\artifacts"
+    },
+    {
+      "Key": "a9914dea-7cf2-4216-ba7e-fecb82baa627",
+      "Value": "$ProjectGuid",
+      "DefaultValue": "$NewGuid()"
+    }
+  ],
+  "Excludes": [
+    "artifacts",
+    ".vs",
+    "bin",
+    "debug",
+    "*.user",
+    "*.suo",
+    "project.lock.json"
+  ],
+  "Source": {
+    "Type": "Folder",
+    "SourceFolder": "C:\\Data\\mycode\\pecan-waffle\\templates\\aspnet5\\WebApiProject",
+    "SourceFiles": null,
+    "SourceRelPath": null,
+    "PackageName": null,
+    "PackageVersion": null
+  }
+}

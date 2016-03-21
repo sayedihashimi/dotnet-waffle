@@ -1,0 +1,35 @@
+﻿{
+  "Name": "",
+  "Description": "",
+
+  "Replacements-old": {
+    "MyProjectName": "$ProjectName",
+    "SolutionDir": "$SolutionDir",
+    "..\\..\\artifacts": "$Artifactsdir"
+  },
+
+  "Replacements": {
+    "MyProjectName": {
+      "Value": "$ProjectName",
+      "DefaultValue": "MyWebApiProject"
+    },
+    "SolutionDir": {
+      "Value": "$SolutionDir"
+    },
+    "..\\..\\artifacts": {
+      "Value": "$Artifactsdir"
+    }
+  },
+
+  "Excludes": [
+    "vs", "artifacts", ".git", "node_modules","bower_components","waffle*.json","*.user","*.suo","*.userosscache","project.lock.json","*.vs*scc"
+  ],
+
+  // opitonal items
+    "LicenseUrl"
+    :
+    "",
+    "ProjectUrl"
+    :
+    ""
+}

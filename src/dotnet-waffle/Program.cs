@@ -10,6 +10,16 @@ namespace dotnet_waffle {
         public static void Main(string[] args)
         {
             try {
+                var pkgtemplate = CreateTemplateFromPackage("DotnetSampleConsoleApp", "1.0.0", "microsoft.dotnet.console.rc2");
+                if(pkgtemplate != null) {
+                    string targetfolder = @"c:\temp\dn-waffle\frompkg";
+                    if (!string.IsNullOrWhiteSpace(targetfolder) && Directory.Exists(targetfolder)) {
+                        Directory.Delete(targetfolder, true);
+                    }
+                    var tcreator = new TemplateCreator();
+                    tcreator.CreateProject(pkgtemplate, targetfolder, "MyNewConsoleProject", null);
+                }
+
                 var template = CreateTemplate();
                 var result = Newtonsoft.Json.JsonConvert.SerializeObject(template, Newtonsoft.Json.Formatting.Indented);
                 Console.WriteLine(result);
@@ -42,8 +52,21 @@ namespace dotnet_waffle {
             Console.ReadLine();
         }
 
+        private static Template CreateTemplateFromPackage(string packageName,string packageVersion, string templateName) {
+            List<Template> pkgTemplates = new TemplateManager().GetTemplatesFromPackage(packageName, packageVersion).ToList();
+            Template result = (from t in pkgTemplates
+                               where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)
+                               select t).FirstOrDefault();
+            if(result == null) {
+                Console.WriteLine(string.Format("Template not found [pkg=[{0}]],ver=[{1}],template-name=[{2}] ", packageName, packageVersion, templateName));
+                return null;
+            }
+
+            return result;
+        }
+
         private static Template CreateTemplate() {
-            var template = new Template("microsoft.aspnet.web.empty.rc1", TemplateType.ProjectTemplate, @"C:\Data\mycode\pecan-waffle\templates\aspnet5\WebApiProject");
+            var template = new Template("microsoft.aspnet.web.empty.rc2", TemplateType.ProjectTemplate, @"C:\Data\mycode\pecan-waffle\templates\aspnet5\WebApiProject");
             template.Alias.Add("empty-web");
 
             template.Replacements.Add(new Replacement("WebApiProject", "$ProjectName", "MyWebProject"));
@@ -61,6 +84,6 @@ namespace dotnet_waffle {
             template.PathReplacemets.Add(new Replacement("WebApiProject", "$ProjectName", "MyWebProject"));
 
             return template;
-        }
+        }        
     }
 }

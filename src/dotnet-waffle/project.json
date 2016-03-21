@@ -10,7 +10,8 @@
     "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23826",
     "System.Dynamic.Runtime": "4.0.11-rc2-23826",
     "System.Xml.XDocument": "4.0.11-rc2-23826",
-    "file-replacer-dotnet": "0.0.1-alpha"
+    "file-replacer-dotnet": "0.0.1-alpha",
+    "System.Diagnostics.Process": "4.1.0-rc2-23826"
   },
 
   "frameworks": {

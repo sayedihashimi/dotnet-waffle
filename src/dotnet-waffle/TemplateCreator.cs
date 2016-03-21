@@ -1,6 +1,7 @@
 ﻿using FileReplacer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,7 +26,7 @@ namespace dotnet_waffle
                 allProperties["ProjectName"] = projectName;
             }
 
-            string templateWorkingDir = GetNewTempWorkingDir();
+            string templateWorkingDir = Helper.GetNewTempWorkingDir();
 
             try {
                 // copy template source files to working dir
@@ -141,7 +142,7 @@ namespace dotnet_waffle
             }
 
             string templatesourcefolder = GetLocalTemplateSourceFolder(template);
-            return GetFiles(templatesourcefolder, null, template.Excludes);
+            return Helper.GetFiles(templatesourcefolder, null, template.Excludes);
         }
 
         public void CopyFiles(string rootdir,IList<string> filesToCopy,string destFolder) {
@@ -197,49 +198,28 @@ namespace dotnet_waffle
                 relPath = string.Format(".{0}",Path.DirectorySeparatorChar);
             }
 
-            return relPath;
-
-//           $fromPathToUse = (Resolve - Path $fromPath).Path
-//        if ((Get - Item $fromPathToUse) -is [System.IO.DirectoryInfo]){
-//            $fromPathToUse += [System.IO.Path]::DirectorySeparatorChar
-//          }
-
-//        $toPathToUse = (Resolve - Path $toPath).Path
-//        if ((Get - Item $toPathToUse) -is [System.IO.DirectoryInfo]){
-//            $toPathToUse += [System.IO.Path]::DirectorySeparatorChar
-//          }
-
-//        [uri]$fromUri = New-Object -TypeName 'uri' -ArgumentList $fromPathToUse
-//  [uri]$toUri = New-Object -TypeName 'uri' -ArgumentList $toPathToUse
-
-//  [string]$relPath = $toPath
-//        #if the Scheme doesn't match just return toPath
-//        if($fromUri.Scheme -eq $toUri.Scheme){
-//            [uri]$relUri = $fromUri.MakeRelativeUri($toUri)
-//            $relPath = [Uri]::UnescapeDataString($relUri.ToString())
-
-//            if([string]::Equals($toUri.Scheme, [Uri]::UriSchemeFile, [System.StringComparison]::OrdinalIgnoreCase)){
-//                $relPath = $relPath.Replace([System.IO.Path]::AltDirectorySeparatorChar,[System.IO.Path]::DirectorySeparatorChar)
-//            }
-//        }
-
-//        if([string]::IsNullOrWhiteSpace($relPath)){
-//            $relPath = ('.{0}' -f [System.IO.Path]::DirectorySeparatorChar)
-//        }
-
-//#'relpath:[{0}]' -f $relPath | Write-verbose
-
-//# return the result here
-//        $relPath
+            return relPath;            
         }
 
         protected string GetLocalTemplateSourceFolder(Template template) {
             if (template == null) { throw new ArgumentNullException(nameof(template)); }
 
-            if(template.Source.Type == SourceType.Git || template.Source.Type == SourceType.Package) {
+            if(template.Source.Type == SourceType.Git) {
                 throw new NotImplementedException();
             }
 
+            // if it's a package then make sure the package is restored and then add template files from there
+            if(template.Source.Type == SourceType.Package) {
+                string expectedPackagePath = Path.Combine(Helper.GetNuGetPackagesPath(), template.Source.PackageName, template.Source.PackageVersion);
+                if (!Directory.Exists(expectedPackagePath)) {
+                    Helper.RestorePackage(template.Source.PackageName, template.Source.PackageVersion);
+                }
+                if (!Directory.Exists(expectedPackagePath)) {
+                    throw new InvalidOperationException(string.Format("NuGet package not found at [{0}]",expectedPackagePath));
+                }
+                template.Source.SourceFolder = expectedPackagePath;
+            }
+            
             bool isRelpath = Path.IsPathRooted(template.Source.SourceFolder);
 
             string localsourcepath = template.Source.SourceFolder;
@@ -257,121 +237,6 @@ namespace dotnet_waffle
             }
 
             return localsourcepath;
-        }
-
-        private string GetTempDirectory() {
-            string assemblyDir = new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName;
-            string tempDir = Path.Combine(assemblyDir, ".templatetemp");
-            if (!Directory.Exists(tempDir)) {
-                Directory.CreateDirectory(tempDir);
-            }
-
-            return tempDir;
-        }
-
-        private string GetNewTempWorkingDir() {
-            var path = Path.Combine(GetTempDirectory(), DateTime.UtcNow.Ticks.ToString());
-            Directory.CreateDirectory(path);
-            return path;
-        }
-
-        private IList<string>GetFiles(string rootDir, IList<string> includes, IList<string> excludes) {
-            string includeStr = null;
-            string excludeStr = null;
-
-            if(includes != null) {
-                var sb = new StringBuilder();
-                foreach(var item in includes) {
-                    sb.Append(item);
-                    sb.Append(";");
-                }
-                includeStr = sb.ToString();
-            }
-            if(excludes != null) {
-                var sb = new StringBuilder();
-                foreach(var item in excludes) {
-                    sb.Append(item);
-                    sb.Append(";");
-                }
-                excludeStr = sb.ToString();
-            }
-
-            return GetFiles(rootDir, includeStr, excludeStr);
-        }
-
-        private IList<string>GetFiles(string rootDir, string include, string exclude) {
-            if (string.IsNullOrWhiteSpace(include)) {
-                include = "*.*";
-            }
-
-            string rootDirFullPath = Path.GetFullPath(rootDir);
-
-            // search for all include files
-            List<string> pathsToInclude = new List<string>();
-            List<string> pathsToExclude = new List<string>();
-
-            if (!string.IsNullOrEmpty(include)) {
-                string[] includeParts = include.Split(';');
-                foreach (string includeStr in includeParts) {
-                    var results = Search(rootDirFullPath, includeStr);
-                    foreach (var result in results) {
-                        if (!pathsToInclude.Contains(result)) {
-                            pathsToInclude.Add(result);
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(exclude)) {
-                string[] excludeParts = exclude.Split(';');
-                foreach (string excludeStr in excludeParts) {
-                    var results = Search(rootDirFullPath, excludeStr);
-                    foreach (var result in results) {
-                        if (!pathsToExclude.Contains(result)) {
-                            pathsToExclude.Add(result);
-                        }
-                    }
-                }
-            }
-
-            int numFilesExcluded = pathsToInclude.RemoveAll(p => pathsToExclude.Contains(p));
-
-            return pathsToInclude.ToList();
-        }
-
-        static IEnumerable<string> Search(string root, string searchPattern) {
-            // taken from: http://stackoverflow.com/a/438316/105999
-            Queue<string> dirs = new Queue<string>();
-            dirs.Enqueue(root);
-            while (dirs.Count > 0) {
-                string dir = dirs.Dequeue();
-
-                // files
-                string[] paths = null;
-                try {
-                    paths = Directory.GetFiles(dir, searchPattern);
-                }
-                catch (Exception) { } // swallow
-
-                if (paths != null && paths.Length > 0) {
-                    foreach (string file in paths) {
-                        yield return file;
-                    }
-                }
-
-                // sub-directories
-                paths = null;
-                try {
-                    paths = Directory.GetDirectories(dir);
-                }
-                catch (Exception) { } // swallow
-
-                if (paths != null && paths.Length > 0) {
-                    foreach (string subDir in paths) {
-                        dirs.Enqueue(subDir);
-                    }
-                }
-            }
         }
     }
 }

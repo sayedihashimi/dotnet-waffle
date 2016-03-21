@@ -8,7 +8,7 @@ namespace dotnet_waffle {
     public class TemplateManager {
         private IList<Template> templates { get; set; }
 
-        public IEnumerable<Template> AddTemplatesFromFolder(string folderPath, bool recurse, string filePattern = "dn-template*.json") {
+        public IEnumerable<Template> GetTemplatesFromFolder(string folderPath, bool recurse, string filePattern = "waffle*.json") {
             List<Template> templates = new List<Template>();
 
             if (!Directory.Exists(folderPath)) { throw new DirectoryNotFoundException(string.Format("Template dir not found [{0}]", folderPath)); }
@@ -29,6 +29,11 @@ namespace dotnet_waffle {
             }
 
             return templates;
+        }
+
+        public IEnumerable<Template>GetTemplatesFromPackage(string packageName,string packageVersion) {
+            string pkgPath = Helper.RestorePackage(packageName, packageVersion);
+            return GetTemplatesFromFolder(pkgPath, true);
         }
 
         public Template AddTemplate(string filePath) {

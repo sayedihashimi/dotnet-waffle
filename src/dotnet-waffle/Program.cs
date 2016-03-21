@@ -21,6 +21,11 @@ namespace dotnet_waffle {
                 var creator = new TemplateCreator();
                 creator.CreateProject(template, destFolder, "MyNewProject", null);
 
+                var manager = new TemplateSourceManager();
+                var settingsFile = @"C:\temp\dn-waffle\settings.json";
+                var sourceFolder = @"C:\Data\mycode\dotnet-waffle\samples";
+                manager.AddTemplateSource(settingsFile, TemplateSource.NewFolderSource(sourceFolder));
+//                manager.AddFolder(@"C:\temp\dn-waffle", @"C:\Data\mycode\dotnet-waffle\samples");
             }
             catch(Exception ex) {
                 Console.WriteLine(ex.ToString());

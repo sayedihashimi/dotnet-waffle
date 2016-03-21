@@ -38,13 +38,15 @@ namespace dotnet_waffle {
             template.Replacements.Add(new Replacement(@"..\..\artifacts", "$Artifacts", @"..\..\artifacts"));
             template.Replacements.Add(new Replacement("a9914dea-7cf2-4216-ba7e-fecb82baa627", "$ProjectGuid", "$NewGuid()"));
 
-            template.Excludes.Add("artifacts");
-            template.Excludes.Add(".vs");
-            template.Excludes.Add("bin");
-            template.Excludes.Add("debug");
+            template.Excludes.Add(@"artifacts\*");
+            template.Excludes.Add(@".vs\*");
+            template.Excludes.Add(@"bin\*");
+            template.Excludes.Add(@"debug\*");
             template.Excludes.Add("*.user");
             template.Excludes.Add("*.suo");
             template.Excludes.Add("project.lock.json");
+            template.Excludes.Add("pw-templateinfo.ps1");
+            template.PathReplacemets.Add(new Replacement("WebApiProject", "$ProjectName", "MyWebProject"));
 
             return template;
         }

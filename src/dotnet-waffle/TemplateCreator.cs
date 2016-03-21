@@ -38,18 +38,51 @@ namespace dotnet_waffle
                 foreach(var rep in template.Replacements) {
                     string repKey = rep.Key;
                     string unevalRepValue = rep.Value;
-                    string repValue = EvaluateString(unevalRepValue, allProperties);
-                    if (string.IsNullOrWhiteSpace(repValue) && !string.IsNullOrWhiteSpace(rep.DefaultValue) ) {
-                        repValue = EvaluateString(rep.DefaultValue, allProperties);
-                    }
+                    string repValue = repValue = GetReplacementValue(rep, properties);
 
                     if (!string.IsNullOrEmpty(repValue)) {
                         replacements.Add(repKey, repValue);
                     }
                 }
+
                 var replacer = new RobustReplacer();
                 replacer.ReplaceInFiles(templateWorkingDir, @"*.*", null, replacements);
 
+                // update file and folder names
+                foreach(var pathRep in template.PathReplacemets) {
+                    var repkey = EvaluateString(pathRep.Key, properties);
+                    var repvalue = GetReplacementValue(pathRep, properties);
+                    if (string.IsNullOrWhiteSpace(repvalue)) {
+                        continue;
+                    }
+
+                    // see if there are any directories that match
+                    var dirToUpdate = Directory.GetDirectories(templateWorkingDir, repkey, SearchOption.AllDirectories);
+                    foreach(var dir in dirToUpdate) {
+                        if (!Directory.Exists(dir)) { continue; }
+
+                        var newPath = dir.Replace(repkey, repvalue);
+                        if (Directory.Exists(newPath)) {
+                            throw new InvalidOperationException(string.Format("Directory to move to already exists. [olddir=[{0}],newdir=[{1}])", dir, newPath));
+                        }
+                        Directory.Move(dir, newPath);
+                    }
+
+                    // update filenames
+                    var filesToUpdate = Directory.GetFiles(templateWorkingDir, repkey, SearchOption.AllDirectories);
+                    foreach(var file in filesToUpdate) {
+                        if (!File.Exists(file)) { continue; }
+
+                        string destFile = file.Replace(repkey, repvalue);
+                        string destFolder = new FileInfo(destFile).DirectoryName;
+                        if (!Directory.Exists(destFolder)) {
+                            Directory.CreateDirectory(destFolder);
+                        }
+                        File.Move(file, destFile);
+                    }
+                }
+
+                // copy to final dest
                 string actualDestFolder = folderPath;
                 if (template.CreateNewFolder) {
                     actualDestFolder = Path.Combine(folderPath, projectName);
@@ -57,14 +90,28 @@ namespace dotnet_waffle
                         Directory.CreateDirectory(actualDestFolder);
                     }
                 }
+                
                 CopyFiles(templateWorkingDir, Directory.GetFiles(templateWorkingDir, "*", SearchOption.AllDirectories), actualDestFolder);
+
             }
             finally {
                 if (Directory.Exists(templateWorkingDir)) {
-                    // Directory.Delete(templateWorkingDir, true);
+                    Directory.Delete(templateWorkingDir, true);
                 }
             }
         }
+
+        private string GetReplacementValue(Replacement replacement, IDictionary<string, string> properties) {
+            string repKey = replacement.Key;
+            string unevalRepValue = replacement.Value;
+            string repValue = EvaluateString(unevalRepValue, properties);
+            if (string.IsNullOrWhiteSpace(repValue) && !string.IsNullOrWhiteSpace(replacement.DefaultValue)) {
+                repValue = EvaluateString(replacement.DefaultValue, properties);
+            }
+
+            return repValue;
+        }
+
         private string EvaluateString(string str, IDictionary<string, string> properties) {
             if(str == null) { return null; }
             string result = str;
@@ -80,10 +127,9 @@ namespace dotnet_waffle
                 }
 
                 // see if it's a guid and create a new one
-                if (result != null && result.Equals("NewGuid()", StringComparison.OrdinalIgnoreCase)) {
+                if (keyname != null && keyname.Equals("NewGuid()", StringComparison.OrdinalIgnoreCase)) {
                     result = Guid.NewGuid().ToString();
                 }
-
             }
 
             return result;

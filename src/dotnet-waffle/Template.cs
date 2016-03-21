@@ -35,6 +35,8 @@ namespace dotnet_waffle {
 
         public IList<Replacement> Replacements { get; set; } = new List<Replacement>();
 
+        public IList<Replacement> PathReplacemets { get; set; } = new List<Replacement>();
+
         public IList<string> Excludes { get; set; } = new List<string>();
 
         public TemplateSource Source { get; set; }

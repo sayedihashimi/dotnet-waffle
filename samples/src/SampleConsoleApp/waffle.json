@@ -1,0 +1,39 @@
+{
+  "Name": "microsoft.dotnet.console.rc2",
+  "Type": "ProjectTemplate",
+  "CreateNewFolder": true,
+  "Alias": [
+    "console"
+  ],
+  "Replacements": [
+    {
+      "Key": "SampleConsoleApp",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyConsoleApp"
+    },
+    {
+      "Key": "..\\..\\artifacts",
+      "Value": "$Artifacts",
+      "DefaultValue": "..\\..\\artifacts"
+    },
+    {
+      "Key": "cc626f44-8dbc-4e2a-98de-c758baec7924",
+      "Value": "$ProjectGuid",
+      "DefaultValue": "$NewGuid()"
+    }
+  ],
+  "PathReplacemets": [
+    {
+      "Key": "SampleConsoleApp",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyConsoleApp"
+    }
+  ],
+  "Excludes": [
+    "artifacts\\*",
+    ".vs\\*",
+    "*.user",
+    "*.suo",
+    "project.lock.json"
+  ]
+}

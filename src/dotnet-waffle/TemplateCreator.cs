@@ -69,7 +69,8 @@ namespace dotnet_waffle
                     }
 
                     // update filenames
-                    var filesToUpdate = Directory.GetFiles(templateWorkingDir, repkey, SearchOption.AllDirectories);
+                    string searchpattern = "*" + repkey + "*";
+                    var filesToUpdate = Directory.GetFiles(templateWorkingDir, searchpattern, SearchOption.AllDirectories);
                     foreach(var file in filesToUpdate) {
                         if (!File.Exists(file)) { continue; }
 

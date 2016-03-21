@@ -25,7 +25,14 @@ namespace dotnet_waffle {
                 var settingsFile = @"C:\temp\dn-waffle\settings.json";
                 var sourceFolder = @"C:\Data\mycode\dotnet-waffle\samples";
                 manager.AddTemplateSource(settingsFile, TemplateSource.NewFolderSource(sourceFolder));
-//                manager.AddFolder(@"C:\temp\dn-waffle", @"C:\Data\mycode\dotnet-waffle\samples");
+
+                destFolder = @"c:\temp\dn-waffle\console";
+                if (!string.IsNullOrWhiteSpace(destFolder) && Directory.Exists(destFolder)) {
+                    Directory.Delete(destFolder, true);
+                }
+                template = Template.BuildFromFile(@"C:\Users\sayedha\Documents\Visual Studio 2015\Projects\SamplesForDotnetWaffle\src\SampleConsoleApp\waffle.json");
+                creator.CreateProject(template, destFolder, "MyNewConsoleApp", null);
+                
             }
             catch(Exception ex) {
                 Console.WriteLine(ex.ToString());

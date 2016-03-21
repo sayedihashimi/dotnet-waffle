@@ -50,6 +50,9 @@ namespace dotnet_waffle {
             var template = JsonConvert.DeserializeObject<Template>(File.ReadAllText(filePath));
 
             template.TemplateFilePath = filePath;
+            if(template.Source == null) {
+                template.Source = TemplateSource.NewFolderSource(new FileInfo(filePath).DirectoryName);
+            }
 
             return template;
         }

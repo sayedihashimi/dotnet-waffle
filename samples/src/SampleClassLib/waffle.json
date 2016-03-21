@@ -1,0 +1,39 @@
+{
+  "Name": "microsoft.dotnet.classlib.rc2",
+  "Type": "ProjectTemplate",
+  "CreateNewFolder": true,
+  "Alias": [
+    "classlib"
+  ],
+  "Replacements": [
+    {
+      "Key": "SampleClassLib",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyClassLibrary"
+    },
+    {
+      "Key": "..\\..\\artifacts",
+      "Value": "$Artifacts",
+      "DefaultValue": "..\\..\\artifacts"
+    },
+    {
+      "Key": "cc626f44-8dbc-4e2a-98de-c758baec7924",
+      "Value": "$ProjectGuid",
+      "DefaultValue": "$NewGuid()"
+    }
+  ],
+  "PathReplacemets": [
+    {
+      "Key": "SampleClassLib",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyClassLibrary"
+    }
+  ],
+  "Excludes": [
+    "artifacts\\*",
+    ".vs\\*",
+    "*.user",
+    "*.suo",
+    "project.lock.json"
+  ]
+}

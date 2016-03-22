@@ -7,7 +7,7 @@
   ],
   "Replacements": [
     {
-      "Key": "SampleConsoleApp",
+      "Key": "DotnetSampleConsoleApp",
       "Value": "$ProjectName",
       "DefaultValue": "MyConsoleApp"
     },
@@ -24,14 +24,14 @@
   ],
   "PathReplacemets": [
     {
-      "Key": "SampleConsoleApp",
+      "Key": "DotnetSampleConsoleApp",
       "Value": "$ProjectName",
       "DefaultValue": "MyConsoleApp"
     }
   ],
   "Excludes": [
-    "artifacts\\*",
-    ".vs\\*",
+    "artifacts",
+    ".vs",
     "*.user",
     "*.suo",
     "project.lock.json"

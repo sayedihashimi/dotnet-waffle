@@ -7,7 +7,7 @@
   ],
   "Replacements": [
     {
-      "Key": "SampleClassLib",
+      "Key": "DotnetSampleClassLib",
       "Value": "$ProjectName",
       "DefaultValue": "MyClassLibrary"
     },
@@ -24,14 +24,14 @@
   ],
   "PathReplacemets": [
     {
-      "Key": "SampleClassLib",
+      "Key": "DotnetSampleClassLib",
       "Value": "$ProjectName",
       "DefaultValue": "MyClassLibrary"
     }
   ],
   "Excludes": [
-    "artifacts\\*",
-    ".vs\\*",
+    "artifacts",
+    ".vs",
     "*.user",
     "*.suo",
     "project.lock.json"

@@ -202,7 +202,8 @@ namespace dotnet_waffle {
 
                 var destPath = destPathOption.Value();
                 if (string.IsNullOrWhiteSpace(destPath)) {
-                    destPath = Directory.GetCurrentDirectory();
+                    // destPath = Directory.GetCurrentDirectory();
+                    destPath = PromptForDest();
                 }
 
                 if (!Path.IsPathRooted(destPath)) {
@@ -229,6 +230,17 @@ namespace dotnet_waffle {
             }
 
             return name;
+        }
+
+        private string PromptForDest() {
+            Console.Write($"Enter a dest path [.\\]: ");
+            var dest = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(dest)) {
+                dest = Directory.GetCurrentDirectory();
+            }
+
+            return dest;
         }
 
         private Template GetOrPromptForTemplate(TemplateManager templateManager,string templateName) {

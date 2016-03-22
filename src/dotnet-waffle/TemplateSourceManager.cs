@@ -79,5 +79,20 @@ namespace dotnet_waffle
                 Console.WriteLine("Source to remove was not found in sources");
             }
         }
+
+        public void UpdateRemoteTemplateSources(List<TemplateSource>templates) {
+            if(templates == null) { return; }
+
+            var gittemplates = (from t in templates
+                                where t.GitUrl != null && !string.IsNullOrWhiteSpace(t.GitUrl.AbsoluteUri)
+                                select t).ToList();
+
+            if (!gittemplates.Any()) { return; }
+
+            foreach(var template in gittemplates) {
+                Console.WriteLine($"Updating templates for [{template.GitUrl.AbsoluteUri}] branch={template.GitBranch}");
+                Helper.UpdateGitRepo(template.GitUrl.AbsoluteUri, template.GitBranch);
+            }
+        }
     }
 }

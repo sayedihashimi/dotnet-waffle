@@ -78,15 +78,15 @@ namespace dotnet_waffle
                 return false;
             }
 
-            if (GitUrl != null && !SourceFolder.Equals(other.GitUrl)) {
+            if (GitUrl != null && !GitUrl.Equals(other.GitUrl)) {
                 return false;
             }
 
-            if (PackageVersion != null && !SourceFolder.Equals(other.PackageVersion)) {
+            if (PackageVersion != null && !PackageVersion.Equals(other.PackageVersion)) {
                 return false;
             }
 
-            if (PackageName != null && !SourceFolder.Equals(other.PackageName)) {
+            if (PackageName != null && !PackageName.Equals(other.PackageName)) {
                 return false;
             }
 

@@ -78,7 +78,7 @@ namespace dotnet_waffle
             string repoName = GetGitRepoNameFor(gitUrl);
             string commandArgs = string.Format("clone {0} --branch {1} --single-branch {2}",gitUrl,branchName,repoName);
 
-            var processInfo = new ProcessStartInfo("git.exe", commandArgs);
+            var processInfo = new ProcessStartInfo("git", commandArgs);
             processInfo.WorkingDirectory = GetRootGitDir();
             var cloneCmd = Process.Start(processInfo);
             cloneCmd.WaitForExit();
@@ -97,8 +97,8 @@ namespace dotnet_waffle
 
             string commandArgs = "pull";
 
-            var processInfo = new ProcessStartInfo("git.exe", commandArgs);
-            processInfo.WorkingDirectory = GetRootGitDir();
+            var processInfo = new ProcessStartInfo("git", commandArgs);
+            processInfo.WorkingDirectory = gitpath;
             var pullCmd = Process.Start(processInfo);
             pullCmd.WaitForExit();
 

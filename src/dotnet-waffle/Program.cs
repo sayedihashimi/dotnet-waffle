@@ -21,6 +21,8 @@ namespace dotnet_waffle {
         public int Run(string[] args) {
             //var templateManager = new TemplateSourceManager(new TemplateHelper.GetSourcesFilePath());
             var templateMan = new TemplateManager(new TemplateSourceManager(Helper.GetSourcesFilePath()));
+            templateMan.SourceManager.UpdateRemoteTemplateSources(templateMan.SourceManager.GetTemplateSources());
+
             var app = new CommandLineApplication();
             app.Name = "dotnet-waffle";
             app.Description = "The dotnet-waffle command is used to create .NET Core projects using templates.";
@@ -178,6 +180,16 @@ namespace dotnet_waffle {
                     // check for folder/file
 
                     command.ShowHelp();
+                    return 0;
+                });
+            });
+
+            app.Command("updatesources", command => {
+                command.Description = "Updates local template content for git template sources";
+                command.HelpOption("-?|-h|--help");
+
+                command.OnExecute(() => {
+                    templateMan.SourceManager.UpdateRemoteTemplateSources(templateMan.SourceManager.GetTemplateSources());
                     return 0;
                 });
             });

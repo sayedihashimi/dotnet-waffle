@@ -8,7 +8,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>cc626f44-8dbc-4e2a-98de-c758baec7924</ProjectGuid>
-    <RootNamespace>SampleConsoleApp</RootNamespace>
+    <RootNamespace>DotnetSampleConsoleApp</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\</OutputPath>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>

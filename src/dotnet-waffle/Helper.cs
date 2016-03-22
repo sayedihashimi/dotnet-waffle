@@ -193,10 +193,11 @@ namespace dotnet_waffle
             List<string> pathsToInclude = new List<string>();
             List<string> pathsToExclude = new List<string>();
 
+            string[] excludeParts = exclude.Split(';');
             if (!string.IsNullOrEmpty(include)) {
                 string[] includeParts = include.Split(';');
                 foreach (string includeStr in includeParts) {
-                    var results = Search(rootDirFullPath, includeStr);
+                    var results = Search(rootDirFullPath, includeStr, excludeParts);
                     foreach (var result in results) {
                         if (!pathsToInclude.Contains(result)) {
                             pathsToInclude.Add(result);
@@ -205,10 +206,10 @@ namespace dotnet_waffle
                 }
             }
 
+            
             if (!string.IsNullOrEmpty(exclude)) {
-                string[] excludeParts = exclude.Split(';');
                 foreach (string excludeStr in excludeParts) {
-                    var results = Search(rootDirFullPath, excludeStr);
+                    var results = Search(rootDirFullPath, excludeStr, excludeParts.ToList());
                     foreach (var result in results) {
                         if (!pathsToExclude.Contains(result)) {
                             pathsToExclude.Add(result);
@@ -217,14 +218,23 @@ namespace dotnet_waffle
                 }
             }
 
+            List<string> excludesLower = (from e in excludeParts
+                                          select e.ToLower()).ToList();
+            
             int numFilesExcluded = pathsToInclude.RemoveAll(p => pathsToExclude.Contains(p));
 
             return pathsToInclude.ToList();
         }
 
-        public static IEnumerable<string> Search(string root, string searchPattern) {
+        public static IEnumerable<string> Search(string root, string searchPattern, IList<string>excludes) {
+            if(excludes == null) {
+                excludes = new List<string>();
+            }
+            IList<string> excludesLower = (from e in excludes
+                                           select e.ToLower()).ToList();
+
             // taken from: http://stackoverflow.com/a/438316/105999
-            Queue<string> dirs = new Queue<string>();
+            Queue < string > dirs = new Queue<string>();
             dirs.Enqueue(root);
             while (dirs.Count > 0) {
                 string dir = dirs.Dequeue();
@@ -251,6 +261,16 @@ namespace dotnet_waffle
 
                 if (paths != null && paths.Length > 0) {
                     foreach (string subDir in paths) {
+                        string foldername = new DirectoryInfo(subDir).Name;
+                        if (excludesLower.Contains(foldername)) {
+                            continue;
+                        }
+                        //foreach(string exclude in excludes) {
+                        //    if (foldername.Equals(exclude, StringComparison.OrdinalIgnoreCase)) {
+                        //        continue;
+                        //    }
+                        //}
+
                         dirs.Enqueue(subDir);
                     }
                 }

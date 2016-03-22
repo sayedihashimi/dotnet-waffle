@@ -1,0 +1,65 @@
+﻿{
+  "userSecretsId": "aspnet-DotnetSampleWebIndAuth-159e6c54-90cb-4375-84bc-d83b492f843f",
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+
+  "dependencies": {
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-rc2-16406",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-rc2-16612",
+    "Microsoft.AspNetCore.Identity": "1.0.0-rc2-16485",
+    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-rc2-16485",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-rc2-16276",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-17116",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-rc2-17116",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-16448",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-rc2-16285",
+    "Microsoft.EntityFrameworkCore.Commands": "1.0.0-rc2-16937",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-rc2-16937",
+    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-rc2-16100",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-16100",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-rc2-16096",
+    "Microsoft.Extensions.Logging": "1.0.0-rc2-16119",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-16119",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-16119",
+    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc2-16383",
+    "NETStandard.Library": "1.0.0-rc2-23819"
+  },
+
+  "commands": {
+    "ef": "EntityFrameworkCore.Commands"
+  },
+
+  "frameworks": {
+    "dnxcore50": {
+      "imports": "portable-net45+win8"
+    }
+  },
+
+  "tools": {
+    "dotnet-publish-iis": "1.0.0-rc2-16276",
+    "dotnet-razor-tooling": "1.0.0-rc2-16209"
+  },
+
+  "content": [
+    "wwwroot",
+    "Views",
+    "appsettings.json"
+  ],
+
+  "exclude": [
+    "node_modules"
+  ],
+
+  "publishExclude": [
+    "**.user",
+    "**.vspscc"
+  ],
+
+  "scripts": {
+    "prepublish": [ "npm install", "bower install", "gulp clean", "gulp min" ],
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath%" ]
+  }
+}

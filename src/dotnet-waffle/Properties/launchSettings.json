@@ -2,7 +2,7 @@
   "profiles": {
     "dotnet-waffle": {
       "commandName": "Project",
-      "commandLineArgs": "-t microsoft.dotnet.console.rc2 -n mynewproject -d C:\\temp\\dn-waffle\\cmdconsole"
+      "commandLineArgs": "-t microsoft.dotnet.web.indauth.rc2 -n MyNewWebApp01 -d C:\\temp\\dn-waffle\\cmdconsole"
     }
   }
 }

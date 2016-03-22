@@ -1,0 +1,41 @@
+{
+  "Name": "microsoft.dotnet.web.indauth.rc2",
+  "Type": "ProjectTemplate",
+  "CreateNewFolder": true,
+  "Alias": [
+    "web.indauth"
+  ],
+  "Replacements": [
+    {
+      "Key": "DotnetSampleWebIndAuth",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyWebApp"
+    },
+    {
+      "Key": "..\\..\\artifacts",
+      "Value": "$Artifacts",
+      "DefaultValue": "..\\..\\artifacts"
+    },
+    {
+      "Key": "ecc11241-d11d-4b7b-acd7-6202dec1ef3b",
+      "Value": "$ProjectGuid",
+      "DefaultValue": "$NewGuid()"
+    }
+  ],
+  "PathReplacemets": [
+    {
+      "Key": "DotnetSampleWebIndAuth",
+      "Value": "$ProjectName",
+      "DefaultValue": "MyWebApp"
+    }
+  ],
+  "Excludes": [
+    "artifacts",
+    ".vs",
+    "node_modules",
+    "bower_components",
+    "*.user",
+    "*.suo",
+    "project.lock.json"
+  ]
+}

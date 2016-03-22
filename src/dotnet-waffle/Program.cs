@@ -23,12 +23,12 @@ namespace dotnet_waffle {
             var templateMan = new TemplateManager(new TemplateSourceManager(Helper.GetSourcesFilePath()));
             var app = new CommandLineApplication();
             app.Name = "dotnet-waffle";
-            app.Description = "The dotnet-new2 command is used to create .NET Core projects using templates.";
+            app.Description = "The dotnet-waffle command is used to create .NET Core projects using templates.";
 
             app.HelpOption("-?|-h|--help");
 
             app.Command("list", command => {
-                command.Description = "shows the installed templates";
+                command.Description = "prints the installed templates";
                 command.HelpOption("-?|-h|--help");                
                 command.OnExecute(() => {
                     // get and display the templates
@@ -48,8 +48,68 @@ namespace dotnet_waffle {
                     return 0;
                 });
             });
-            
-            app.Command("add", command => {
+
+            app.Command("removesource", command => {
+                command.Description = "Removes a source for templates";
+                command.HelpOption("-?|-h|--help");
+
+                var pkgOption = command.Option("-p|--package <packagename>", "Name of the NuGet package that contains templates to install", CommandOptionType.SingleValue);
+                var pkgVerOption = command.Option("-v|--version <version>", "Version of the NuGet package", CommandOptionType.SingleValue);
+
+                var gitOption = command.Option("-g|--giturl <giturl>", "URL for the git repo which contains templates to install", CommandOptionType.SingleValue);
+                var gitBranchOption = command.Option("-b|--gitbranchname <branchname>", "Name of the branch for the git repo", CommandOptionType.SingleValue);
+
+                var pathOption = command.Option("-f|--folder <folder-or-file-path>", "Path to the folder to add templates from", CommandOptionType.SingleValue);
+                command.OnExecute(() => {
+                    if (pathOption.HasValue() && !string.IsNullOrWhiteSpace(pathOption.Value())) {
+                        string path = pathOption.Value();
+                        if (string.IsNullOrWhiteSpace(path)) {
+                            Console.WriteLine("path is empty");
+                            command.ShowHelp();
+                            return -1;
+                        }
+                        templateMan.SourceManager.RemoveTemplateSource(TemplateSource.NewFolderSource(path));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
+                        PrintTemplates(templateMan.GetInstalledTemplates());
+                    }
+                    else if (pkgOption.HasValue() && !string.IsNullOrWhiteSpace(pkgOption.Value())) {
+                        string pkgName = pkgOption.Value();
+                        string pkgVersion = pkgVerOption.Value();
+
+                        if (string.IsNullOrWhiteSpace(pkgName) || string.IsNullOrWhiteSpace(pkgVersion)) {
+                            Console.WriteLine("package name or version missing");
+                            command.ShowHelp();
+                            return -1;
+                        }
+
+                        templateMan.SourceManager.RemoveTemplateSource(TemplateSource.NewNuGetSource(pkgName, pkgVersion));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
+                        PrintTemplates(templateMan.GetInstalledTemplates());
+
+                        return 0;
+                    }
+                    else if (gitOption.HasValue() && !string.IsNullOrWhiteSpace(gitOption.Value())) {
+                        string gitUrl = gitOption.Value();
+                        string gitBranch = gitBranchOption.Value();
+
+                        if (string.IsNullOrWhiteSpace(gitUrl) || string.IsNullOrWhiteSpace(gitBranch)) {
+                            Console.WriteLine("git url or branch missing");
+                            command.ShowHelp();
+                            return -1;
+                        }
+
+                        templateMan.SourceManager.RemoveTemplateSource(TemplateSource.NewGitSource(new Uri(gitUrl), gitBranch));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
+                        PrintTemplates(templateMan.GetInstalledTemplates());
+
+                        return 0;
+                    }
+                    return 0;
+                });
+
+            });
+
+            app.Command("addsource", command => {
                 command.Description = "Used to add a template source";
                 command.HelpOption("-?|-h|--help");
 
@@ -71,6 +131,7 @@ namespace dotnet_waffle {
                         }
 
                         templateMan.SourceManager.AddTemplateSource(TemplateSource.NewFolderSource(path));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
                         PrintTemplates(templateMan.GetInstalledTemplates());
 
                         Console.Write("folder selected [{0}]", path);
@@ -87,6 +148,7 @@ namespace dotnet_waffle {
                         }
 
                         templateMan.SourceManager.AddTemplateSource(TemplateSource.NewNuGetSource(pkgName, pkgVersion));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
                         PrintTemplates(templateMan.GetInstalledTemplates());
 
                         return 0;
@@ -102,8 +164,9 @@ namespace dotnet_waffle {
                         }
 
                         templateMan.SourceManager.AddTemplateSource(TemplateSource.NewGitSource(new Uri(gitUrl), gitBranch));
+                        PrintSources(templateMan.SourceManager.GetTemplateSources());
+                        PrintTemplates(templateMan.GetInstalledTemplates());
 
-                        Console.Write("git selected [{0},{1}]", gitOption.Value(), gitBranch);
                         return 0;
                     }
                     else {
@@ -118,9 +181,117 @@ namespace dotnet_waffle {
                     return 0;
                 });
             });
-            
+
+            var templateOption = app.Option("-t|--template <template>", "Template name used for creation", CommandOptionType.SingleValue);
+            var nameOption = app.Option("-n|--name <name>", "The name of the new project", CommandOptionType.SingleValue);
+            var destPathOption = app.Option("-d|--dest <destpath>", "The location to create the project, current working dir is used by default", CommandOptionType.SingleValue);
+
+            app.OnExecute(() => {
+                var templateName = templateOption.Value();
+                Template template = GetOrPromptForTemplate(templateMan, templateName);
+
+                if(template == null) {
+                    Console.WriteLine("template not found");
+                    return -1;
+                }
+
+                var nameValue = nameOption.Value();
+                if (string.IsNullOrWhiteSpace(nameValue)) {
+                    nameValue = PromptForName();
+                }
+
+                var destPath = destPathOption.Value();
+                if (string.IsNullOrWhiteSpace(destPath)) {
+                    destPath = Directory.GetCurrentDirectory();
+                }
+
+                if (!Path.IsPathRooted(destPath)) {
+                    destPath = Path.Combine(Directory.GetCurrentDirectory(), destPath);
+                }
+
+                new TemplateCreator().CreateProject(template, destPath, nameValue, null);
+
+                return 0;
+            });
+
             return app.Execute(args);
         }
+
+        private string PromptForName() {
+            var defaultName = "Project1";
+
+            Console.Write($"Enter a project name [{defaultName}]: ");
+
+            var name = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(name)) {
+                name = defaultName;
+            }
+
+            return name;
+        }
+
+        private Template GetOrPromptForTemplate(TemplateManager templateManager,string templateName) {
+            Template result = null;
+            if (string.IsNullOrWhiteSpace(templateName)) {
+                result = PromptForTemplate(templateManager);
+            }
+            else {
+                result = (from t in templateManager.GetInstalledTemplates()
+                          where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)
+                          select t).FirstOrDefault();
+            }
+            return result;
+        }
+
+        private Template PromptForTemplate(TemplateManager templateManager) {
+            var templates = templateManager.GetInstalledTemplates().ToList();
+
+            if (templates.Count == 0) {
+                return null;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Templates");
+            Console.WriteLine("-----------------------------------------");
+
+            var maxNameLength = templates.Max(t => t.Name.Length);
+
+            for (var i = 0; i < templates.Count; i++) {
+                var template = templates[i];
+                var padding = new string(' ', maxNameLength - template.Name.Length);
+                Console.WriteLine($"{i + 1}. {template.Name} {padding}[{template.Source.SourceFolder}]");
+            }
+
+            Console.WriteLine();
+            Console.Write($"Select a template [1]: ");
+
+            var selection = ConsoleUtils.ReadInt(templates.Count);
+
+            return templates[selection - 1];
+
+            //// TODO: Make this support template hierarchies (recursion!)
+            //Console.WriteLine();
+            //Console.WriteLine("Templates");
+            //Console.WriteLine("-----------------------------------------");
+
+            //var maxNameLength = templates.Max(t => t.Name.Length);
+
+            //for (var i = 0; i < templates.Count; i++) {
+            //    var template = templates[i];
+            //    var padding = new string(' ', maxNameLength - template.Name.Length);
+            //    Console.WriteLine($"{i + 1}. {template.Name} {padding}[{template.Path}]");
+            //}
+
+            //Console.WriteLine();
+            //Console.Write($"Select a template [1]: ");
+
+            //var selection = ConsoleUtils.ReadInt(templates.Count);
+
+            //return templates[selection - 1];
+        }
+
+
         private void PrintTemplates(IEnumerable<Template> templates) {
             Console.WriteLine("--- Installed templates ---");
             if (!templates.Any()) {

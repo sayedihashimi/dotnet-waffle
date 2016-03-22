@@ -2,7 +2,7 @@
   "profiles": {
     "dotnet-waffle": {
       "commandName": "Project",
-      "commandLineArgs": "add -f C:\\Data\\mycode\\dotnet-waffle\\samples\\src"
+      "commandLineArgs": "-t microsoft.dotnet.console.rc2 -n mynewproject -d C:\\temp\\dn-waffle\\cmdconsole"
     }
   }
 }

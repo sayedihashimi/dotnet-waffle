@@ -39,7 +39,7 @@ namespace dotnet_waffle
                 foreach(var rep in template.Replacements) {
                     string repKey = rep.Key;
                     string unevalRepValue = rep.Value;
-                    string repValue = repValue = GetReplacementValue(rep, properties);
+                    string repValue = repValue = GetReplacementValue(rep, allProperties);
 
                     if (!string.IsNullOrEmpty(repValue)) {
                         replacements.Add(repKey, repValue);
@@ -51,8 +51,8 @@ namespace dotnet_waffle
 
                 // update file and folder names
                 foreach(var pathRep in template.PathReplacemets) {
-                    var repkey = EvaluateString(pathRep.Key, properties);
-                    var repvalue = GetReplacementValue(pathRep, properties);
+                    var repkey = EvaluateString(pathRep.Key, allProperties);
+                    var repvalue = GetReplacementValue(pathRep, allProperties);
                     if (string.IsNullOrWhiteSpace(repvalue)) {
                         continue;
                     }

@@ -55,25 +55,34 @@ namespace dotnet_waffle {
                 command.HelpOption("-?|-h|--help");
                 // var idArg = command.Argument("[PackageId]", "The ID of the template package");
                 // var versionArg = command.Argument("[PackageVersion]", "The version of the template package");
-                
+
                 //CommandOptionType.NoValue
                 var pkgOption = command.Option("-p|--package <packagename>", "Name of the NuGet package that contains templates to install", CommandOptionType.SingleValue);
                 var pkgVerOption = command.Option("-v|--version <version>", "Version of the NuGet package", CommandOptionType.SingleValue);
 
                 var gitOption = command.Option("-g|--giturl <giturl>", "URL for the git repo which contains templates to install", CommandOptionType.SingleValue);
-                var gitBranch = command.Option("-b|--gitbranchname <branchname>", "Name of the branch for the git repo", CommandOptionType.SingleValue);
+                var gitBranchOption = command.Option("-b|--gitbranchname <branchname>", "Name of the branch for the git repo", CommandOptionType.SingleValue);
 
                 var pathOption = command.Option("-f|--folder <folder-or-file-path>", "Path to the folder to add templates from", CommandOptionType.SingleValue);
 
                 command.OnExecute(() => {
                     if(pathOption.HasValue() && !string.IsNullOrWhiteSpace(pathOption.Value())){
-                        Console.Write("folder selected [{0}]", pathOption.Value());
+                        string path = pathOption.Value();
+                        Console.Write("folder selected [{0}]", path);
+                        return 0;
                     }
                     else if(pkgOption.HasValue() && !string.IsNullOrWhiteSpace(pkgOption.Value())){
-                        Console.Write("pkg selected [{0}]", pkgOption.Value());
+                        string pkgName = pkgOption.Value();
+                        string pkgVersion = pkgVerOption.Value();
+
+                        Console.Write("pkg selected [{0},{1}]", pkgName, pkgVersion);
+                        return 0;
                     }
                     else if(gitOption.HasValue() && !string.IsNullOrWhiteSpace(gitOption.Value())) {
-                        Console.Write("git selected [{0}]", gitOption.Value());
+                        string gitUrl = gitOption.Value();
+                        string gitBranch = gitBranchOption.Value();
+                        Console.Write("git selected [{0},{1}]", gitOption.Value(), gitBranch);
+                        return 0;
                     }
                     else {
                         command.ShowHelp();
@@ -83,8 +92,9 @@ namespace dotnet_waffle {
                     // check for package
                     // check for folder/file
 
-                    Console.WriteLine(string.Format("Package option value: [{0}]", pkgOption.Value()));
-                    Console.WriteLine("inside of add");
+                    command.ShowHelp();
+                    //Console.WriteLine(string.Format("Package option value: [{0}]", pkgOption.Value()));
+                    //Console.WriteLine("inside of add");
                     return 0;
                 });
             });

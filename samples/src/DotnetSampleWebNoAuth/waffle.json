@@ -1,13 +1,13 @@
-{
-  "Name": "microsoft.dotnet.web.indauth.rc2",
+﻿{
+  "Name": "microsoft.dotnet.web.noauth.rc2",
   "Type": "ProjectTemplate",
   "CreateNewFolder": true,
   "Alias": [
-    "web.indauth"
+    "web.noauth"
   ],
   "Replacements": [
     {
-      "Key": "DotnetSampleWebIndAuth",
+      "Key": "DotnetSampleWebNoAuth",
       "Value": "$ProjectName",
       "DefaultValue": "MyWebApp"
     },
@@ -17,14 +17,14 @@
       "DefaultValue": "..\\..\\artifacts"
     },
     {
-      "Key": "e4645313-e93b-4246-8da0-918412da2dbe",
+      "Key": "ecc11241-d11d-4b7b-acd7-6202dec1ef3b",
       "Value": "$ProjectGuid",
       "DefaultValue": "$NewGuid()"
     }
   ],
   "PathReplacemets": [
     {
-      "Key": "DotnetSampleWebIndAuth",
+      "Key": "DotnetSampleWebNoAuth",
       "Value": "$ProjectName",
       "DefaultValue": "MyWebApp"
     }

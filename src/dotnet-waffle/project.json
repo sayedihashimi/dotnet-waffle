@@ -11,7 +11,23 @@
     "System.Dynamic.Runtime": "4.0.11-rc2-23826",
     "System.Xml.XDocument": "4.0.11-rc2-23826",
     "file-replacer-dotnet": "0.0.1-alpha",
-    "System.Diagnostics.Process": "4.1.0-rc2-23826"
+    "System.Diagnostics.Process": "4.1.0-rc2-23826",
+    "Microsoft.Extensions.Logging": "1.0.0-rc2-16040",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-16040",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-16537",
+    "Microsoft.Extensions.CommandLineUtils.Sources": {
+      "type": "build",
+      "version": "1.0.0-rc2-20221"
+    },
+    "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
+      "version": "1.0.0-rc2-20221",
+      "type": "build"
+    },
+    "Microsoft.Dnx.Runtime.Sources": {
+      "version": "1.0.0-rc2-16453",
+      "type": "build"
+    },
+    "Microsoft.NETCore.ConsoleHost": "1.0.0-rc2-23826"
   },
 
   "frameworks": {

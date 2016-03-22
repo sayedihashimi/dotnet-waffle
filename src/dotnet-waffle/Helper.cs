@@ -21,6 +21,10 @@ namespace dotnet_waffle
             return tempDir;
         }
 
+        public static string GetSourcesFilePath() {
+            return Path.Combine(GetTempDirectory(), "sources.json");
+        }
+
         public static string GetNewTempWorkingDir() {
             var path = Path.Combine(GetTempDirectory(), DateTime.UtcNow.Ticks.ToString());
             Directory.CreateDirectory(path);

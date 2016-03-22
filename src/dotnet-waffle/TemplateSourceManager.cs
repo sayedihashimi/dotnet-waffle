@@ -9,28 +9,34 @@ namespace dotnet_waffle
 {
     public class TemplateSourceManager
     {
-        public List<TemplateSource> GetTemplatesFrom(string settingsFilePath) {
+        public TemplateSourceManager(string sourcesFilePath) {
+            SourcesFilePath = sourcesFilePath;
+        }
+
+        private string SourcesFilePath { get; set; }
+
+        public List<TemplateSource> GetTemplateSources() {
             List<TemplateSource> results = null;
-            if (File.Exists(settingsFilePath)) {
-                var contents = File.ReadAllText(settingsFilePath);
+            if (File.Exists(SourcesFilePath)) {
+                var contents = File.ReadAllText(SourcesFilePath);
                 results = JsonConvert.DeserializeObject<List<TemplateSource>>(contents);
             }
             return results;
         }
 
-        public void SaveTemplates(string settingsFilePath, List<TemplateSource> sources) {
+        public void SaveTemplates(List<TemplateSource> sources) {
             var str = JsonConvert.SerializeObject(sources);
-            File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(sources,Formatting.Indented));
+            File.WriteAllText(SourcesFilePath, JsonConvert.SerializeObject(sources,Formatting.Indented));
         }
 
-        public void AddTemplateSource(string settingsFilePath, TemplateSource sourceToAdd) {
+        public void AddTemplateSource(TemplateSource sourceToAdd) {
             List<TemplateSource> existingTemplates = null;            
-            if (File.Exists(settingsFilePath)) {
+            if (File.Exists(SourcesFilePath)) {
                 try {
-                    existingTemplates = GetTemplatesFrom(settingsFilePath);
+                    existingTemplates = GetTemplateSources();
                 }
                 catch(Exception ex) {
-                    Console.WriteLine(string.Format("Unable to read the settings file from [{0}]. Overwriting with new source only. Error: {1}", settingsFilePath, ex.ToString()));
+                    Console.WriteLine(string.Format("Unable to read the settings file from [{0}]. Overwriting with new source only. Error: {1}", SourcesFilePath, ex.ToString()));
                 }
             }
 
@@ -47,17 +53,17 @@ namespace dotnet_waffle
                 }
             }
             
-            SaveTemplates(settingsFilePath, sources);
+            SaveTemplates(sources);
         }
 
-        public void RemoveTemplateSource(string settingsFilePath, TemplateSource sourceToRemove) {
+        public void RemoveTemplateSource(TemplateSource sourceToRemove) {
             List<TemplateSource> existingTemplates = null;
-            if (File.Exists(settingsFilePath)) {
+            if (File.Exists(SourcesFilePath)) {
                 try {
-                    existingTemplates = GetTemplatesFrom(settingsFilePath);
+                    existingTemplates = GetTemplateSources();
                 }
                 catch (Exception ex) {
-                    Console.WriteLine(string.Format("Unable to read the settings file from [{0}]. Overwriting with new source only. Error: {1}", settingsFilePath, ex.ToString()));
+                    Console.WriteLine(string.Format("Unable to read the settings file from [{0}]. Overwriting with new source only. Error: {1}", SourcesFilePath, ex.ToString()));
                 }
             }
 
@@ -67,7 +73,7 @@ namespace dotnet_waffle
 
             if (existingTemplates.Contains(sourceToRemove)) {
                 existingTemplates.Remove(sourceToRemove);
-                SaveTemplates(settingsFilePath, existingTemplates);
+                SaveTemplates(existingTemplates);
             }
             else {
                 Console.WriteLine("Source to remove was not found in sources");

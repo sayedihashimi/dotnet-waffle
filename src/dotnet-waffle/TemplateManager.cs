@@ -5,7 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace dotnet_waffle {
-    public class TemplateManager {        
+    public class TemplateManager {
+        public TemplateManager(TemplateSourceManager sourceManager) {
+            SourceManager = sourceManager;
+        }
+        private TemplateSourceManager SourceManager { get; set; }
+           
         public IEnumerable<Template> GetTemplatesFromFolder(string folderPath, bool recurse, string filePattern = "waffle*.json") {
             List<Template> templates = new List<Template>();
 
@@ -37,6 +42,34 @@ namespace dotnet_waffle {
         public IEnumerable<Template>GetTemplatesFromGit(string gitUri,string branchName) {
             string gitpath = Helper.EnsureGitIsClonedLocally(gitUri, branchName);
             return GetTemplatesFromFolder(gitpath, true);
+        }
+
+        public IEnumerable<Template>GetTemplateFromSource(TemplateSource source) {
+            switch (source.Type) {
+                case SourceType.Folder:
+                    return GetTemplatesFromFolder(source.SourceFolder, true);
+                case SourceType.Package:
+                    return GetTemplatesFromPackage(source.PackageName, source.PackageVersion);
+                case SourceType.Git:
+                    return GetTemplatesFromGit(source.GitUrl.AbsoluteUri, source.GitBranch);
+                default:
+                    throw new InvalidOperationException(string.Format("Unknown source type [{0}]", source.Type));
+            }
+        }
+
+        public IEnumerable<Template> GetInstalledTemplates() {
+            IList<TemplateSource> sources = SourceManager.GetTemplateSources();
+            List<Template> templates = new List<Template>();
+
+            if (sources != null) {
+                foreach (var source in sources) {
+                    var sourceTemplates = GetTemplateFromSource(source);
+                    if (sourceTemplates != null) {
+                        templates.AddRange(sourceTemplates);
+                    }
+                }
+            }
+            return templates;
         }
     }
 }

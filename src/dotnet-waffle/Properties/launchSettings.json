@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dotnet-waffle": {
+      "commandName": "Project",
+      "commandLineArgs": "add -p DotnetSampleConsoleApp"
+    }
+  }
+}

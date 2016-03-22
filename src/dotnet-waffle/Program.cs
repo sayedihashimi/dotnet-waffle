@@ -1,17 +1,102 @@
-﻿using System;
+﻿using Microsoft.Dnx.Runtime.Common.CommandLine;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace dotnet_waffle {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args) {
+            try {
+                return new Program().Run(args);
+            }
+            catch (Exception ex) {
+                Console.Error.WriteLine("FAIL: {0}", ex);
+                return 1;
+            }
+        }
+
+        public int Run(string[] args) {
+            //var templateManager = new TemplateSourceManager(new TemplateHelper.GetSourcesFilePath());
+            var templateMan = new TemplateManager(new TemplateSourceManager(Helper.GetSourcesFilePath()));
+            var app = new CommandLineApplication();
+            app.Name = "dotnet-waffle";
+            app.Description = "The dotnet-new2 command is used to create .NET Core projects using templates.";
+
+            app.HelpOption("-?|-h|--help");
+
+            app.Command("list", command => {
+                command.Description = "list description";
+                command.HelpOption("-?|-h|--help");
+                command.OnExecute(() => {
+                    // get and display the templates
+                    // var sources = sourceManager.GetTemplateSources();
+                    var installedTemplates = templateMan.GetInstalledTemplates();
+
+                    if (!installedTemplates.Any()) {
+                        Console.WriteLine("No templates installed");
+                        return 0;
+                    }
+
+                    var maxNameLength = installedTemplates.Max(t => t.Name.Length);
+                    foreach (var template in installedTemplates) {
+                        var padding = new string(' ', maxNameLength - template.Name.Length);
+                        Console.WriteLine($"  - {template.Name} {padding} [{template.Source.Type}]");
+                    }
+
+                    return 0;
+                });
+            });
+            
+            app.Command("add", command => {
+                command.Description = "Used to add a template source";
+                command.HelpOption("-?|-h|--help");
+                // var idArg = command.Argument("[PackageId]", "The ID of the template package");
+                // var versionArg = command.Argument("[PackageVersion]", "The version of the template package");
+                
+                //CommandOptionType.NoValue
+                var pkgOption = command.Option("-p|--package <packagename>", "Name of the NuGet package that contains templates to install", CommandOptionType.SingleValue);
+                var pkgVerOption = command.Option("-v|--version <version>", "Version of the NuGet package", CommandOptionType.SingleValue);
+
+                var gitOption = command.Option("-g|--giturl <giturl>", "URL for the git repo which contains templates to install", CommandOptionType.SingleValue);
+                var gitBranch = command.Option("-b|--gitbranchname <branchname>", "Name of the branch for the git repo", CommandOptionType.SingleValue);
+
+                var pathOption = command.Option("-f|--folder <folder-or-file-path>", "Path to the folder to add templates from", CommandOptionType.SingleValue);
+
+                command.OnExecute(() => {
+                    if(pathOption.HasValue() && !string.IsNullOrWhiteSpace(pathOption.Value())){
+                        Console.Write("folder selected [{0}]", pathOption.Value());
+                    }
+                    else if(pkgOption.HasValue() && !string.IsNullOrWhiteSpace(pkgOption.Value())){
+                        Console.Write("pkg selected [{0}]", pkgOption.Value());
+                    }
+                    else if(gitOption.HasValue() && !string.IsNullOrWhiteSpace(gitOption.Value())) {
+                        Console.Write("git selected [{0}]", gitOption.Value());
+                    }
+                    else {
+                        command.ShowHelp();
+                        return -1;
+                    }
+                    // check for git
+                    // check for package
+                    // check for folder/file
+
+                    Console.WriteLine(string.Format("Package option value: [{0}]", pkgOption.Value()));
+                    Console.WriteLine("inside of add");
+                    return 0;
+                });
+            });
+            
+            return app.Execute(args);
+            // app.ShowHelp();
+            // return 1;
+        }
+
+        public static void OldMain(string[] args)
         {
             try {
-                
-
                 var pkgtemplate = GetTemplateFromPackage("DotnetSampleConsoleApp", "1.0.0", "microsoft.dotnet.console.rc2");
                 if(pkgtemplate != null) {
                     string targetfolder = @"c:\temp\dn-waffle\frompkg";
@@ -41,10 +126,10 @@ namespace dotnet_waffle {
                 if (!string.IsNullOrWhiteSpace(destFolder) && Directory.Exists(destFolder)) { Directory.Delete(destFolder, true); }
                 creator.CreateProject(template, destFolder, "MyNewConsoleProject", null);
 
-                var manager = new TemplateSourceManager();
                 var settingsFile = @"C:\temp\dn-waffle\settings.json";
+                var manager = new TemplateSourceManager(settingsFile);                
                 var sourceFolder = @"C:\Data\mycode\dotnet-waffle\samples";
-                manager.AddTemplateSource(settingsFile, TemplateSource.NewFolderSource(sourceFolder));
+                manager.AddTemplateSource(TemplateSource.NewFolderSource(sourceFolder));
 
                 destFolder = @"c:\temp\dn-waffle\console";
                 if (!string.IsNullOrWhiteSpace(destFolder) && Directory.Exists(destFolder)) {
@@ -63,7 +148,7 @@ namespace dotnet_waffle {
         }
 
         private static Template GetTemplateFromGit(string gitUrl, string gitBranch, string templateName) {
-            var templates = new TemplateManager().GetTemplatesFromGit(gitUrl, gitBranch);
+            var templates = new TemplateManager(new TemplateSourceManager(Helper.GetSourcesFilePath())).GetTemplatesFromGit(gitUrl, gitBranch);
             Template result = (from t in templates
                                where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)
                                select t).FirstOrDefault();
@@ -76,7 +161,7 @@ namespace dotnet_waffle {
         }
 
         private static Template GetTemplateFromPackage(string packageName,string packageVersion, string templateName) {
-            List<Template> pkgTemplates = new TemplateManager().GetTemplatesFromPackage(packageName, packageVersion).ToList();
+            List<Template> pkgTemplates = new TemplateManager(new TemplateSourceManager(Helper.GetSourcesFilePath())).GetTemplatesFromPackage(packageName, packageVersion).ToList();
             Template result = (from t in pkgTemplates
                                where t.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase)
                                select t).FirstOrDefault();

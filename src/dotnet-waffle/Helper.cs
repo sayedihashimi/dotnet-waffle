@@ -11,6 +11,19 @@ namespace dotnet_waffle
 {
     public class Helper
     {
+        //public string GetSourceString(TemplateSource Source) {
+        //    switch (Source.Type) {
+        //        case SourceType.Folder:
+        //            return $"folder={Source.SourceFolder}";
+        //        case SourceType.Git:
+        //            return $"git={Source.GitUrl} branch={Source.GitBranch}";
+        //        case SourceType.Package:
+        //            return $"package={Source.PackageName} version={Source.PackageVersion}";
+        //        default:
+        //            throw new InvalidOperationException($"Unknown source type {Source.Type}");
+        //    }
+        //}
+
         public static string GetTempDirectory() {
             string assemblyDir = new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName;
             string tempDir = Path.Combine(assemblyDir, ".templatetemp");

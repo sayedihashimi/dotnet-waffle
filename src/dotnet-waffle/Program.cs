@@ -28,24 +28,23 @@ namespace dotnet_waffle {
             app.HelpOption("-?|-h|--help");
 
             app.Command("list", command => {
-                command.Description = "list description";
-                command.HelpOption("-?|-h|--help");
+                command.Description = "shows the installed templates";
+                command.HelpOption("-?|-h|--help");                
                 command.OnExecute(() => {
                     // get and display the templates
                     // var sources = sourceManager.GetTemplateSources();
-                    var installedTemplates = templateMan.GetInstalledTemplates();
+                    var installedTemplates = templateMan.GetInstalledTemplates();                    
+                    PrintTemplates(installedTemplates);
 
-                    if (!installedTemplates.Any()) {
-                        Console.WriteLine("No templates installed");
-                        return 0;
-                    }
+                    return 0;
+                });
+            });
 
-                    var maxNameLength = installedTemplates.Max(t => t.Name.Length);
-                    foreach (var template in installedTemplates) {
-                        var padding = new string(' ', maxNameLength - template.Name.Length);
-                        Console.WriteLine($"  - {template.Name} {padding} [{template.Source.Type}]");
-                    }
-
+            app.Command("listsource", command => {
+                command.Description = "shows the template sources that have been added";
+                command.OnExecute(() => {
+                    var sources = templateMan.SourceManager.GetTemplateSources();
+                    PrintSources(sources);
                     return 0;
                 });
             });
@@ -53,10 +52,7 @@ namespace dotnet_waffle {
             app.Command("add", command => {
                 command.Description = "Used to add a template source";
                 command.HelpOption("-?|-h|--help");
-                // var idArg = command.Argument("[PackageId]", "The ID of the template package");
-                // var versionArg = command.Argument("[PackageVersion]", "The version of the template package");
 
-                //CommandOptionType.NoValue
                 var pkgOption = command.Option("-p|--package <packagename>", "Name of the NuGet package that contains templates to install", CommandOptionType.SingleValue);
                 var pkgVerOption = command.Option("-v|--version <version>", "Version of the NuGet package", CommandOptionType.SingleValue);
 
@@ -68,6 +64,15 @@ namespace dotnet_waffle {
                 command.OnExecute(() => {
                     if(pathOption.HasValue() && !string.IsNullOrWhiteSpace(pathOption.Value())){
                         string path = pathOption.Value();
+                        if (string.IsNullOrWhiteSpace(path)) {
+                            Console.WriteLine("path is empty");
+                            command.ShowHelp();
+                            return -1;
+                        }
+
+                        templateMan.SourceManager.AddTemplateSource(TemplateSource.NewFolderSource(path));
+                        PrintTemplates(templateMan.GetInstalledTemplates());
+
                         Console.Write("folder selected [{0}]", path);
                         return 0;
                     }
@@ -75,12 +80,29 @@ namespace dotnet_waffle {
                         string pkgName = pkgOption.Value();
                         string pkgVersion = pkgVerOption.Value();
 
-                        Console.Write("pkg selected [{0},{1}]", pkgName, pkgVersion);
+                        if (string.IsNullOrWhiteSpace(pkgName) || string.IsNullOrWhiteSpace(pkgVersion)) {
+                            Console.WriteLine("package name or version missing");
+                            command.ShowHelp();
+                            return -1;
+                        }
+
+                        templateMan.SourceManager.AddTemplateSource(TemplateSource.NewNuGetSource(pkgName, pkgVersion));
+                        PrintTemplates(templateMan.GetInstalledTemplates());
+
                         return 0;
                     }
                     else if(gitOption.HasValue() && !string.IsNullOrWhiteSpace(gitOption.Value())) {
                         string gitUrl = gitOption.Value();
                         string gitBranch = gitBranchOption.Value();
+
+                        if (string.IsNullOrWhiteSpace(gitUrl) || string.IsNullOrWhiteSpace(gitBranch)) {
+                            Console.WriteLine("git url or branch missing");
+                            command.ShowHelp();
+                            return -1;
+                        }
+
+                        templateMan.SourceManager.AddTemplateSource(TemplateSource.NewGitSource(new Uri(gitUrl), gitBranch));
+
                         Console.Write("git selected [{0},{1}]", gitOption.Value(), gitBranch);
                         return 0;
                     }
@@ -93,17 +115,38 @@ namespace dotnet_waffle {
                     // check for folder/file
 
                     command.ShowHelp();
-                    //Console.WriteLine(string.Format("Package option value: [{0}]", pkgOption.Value()));
-                    //Console.WriteLine("inside of add");
                     return 0;
                 });
             });
             
             return app.Execute(args);
-            // app.ShowHelp();
-            // return 1;
         }
+        private void PrintTemplates(IEnumerable<Template> templates) {
+            Console.WriteLine("--- Installed templates ---");
+            if (!templates.Any()) {
+                Console.WriteLine("No templates installed");
+                return;
+            }
 
+            var maxNameLength = templates.Max(t => t.Name.Length);
+            foreach (var template in templates) {
+                var padding = new string(' ', maxNameLength - template.Name.Length);
+                Console.WriteLine($"  - {template.Name} {padding} [{template.Source.GetSourceString()}]");
+            }
+        }
+        private void PrintSources(IEnumerable<TemplateSource> sources) {
+            Console.WriteLine("--- Installed template sources ---");
+            if (!sources.Any()) {
+                Console.WriteLine("No templates sources installed");
+                return;
+            }
+
+            var maxNameLength = sources.Max(s => s.GetSourceString().Length);
+            foreach (var source in sources) {
+                var padding = new string(' ', maxNameLength - source.GetSourceString().Length);
+                Console.WriteLine($"  - {source.Type} {padding} [{source.GetSourceString()}]");
+            }
+        }
         public static void OldMain(string[] args)
         {
             try {

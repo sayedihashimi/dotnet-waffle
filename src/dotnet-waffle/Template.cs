@@ -9,20 +9,16 @@ using System.Threading.Tasks;
 namespace dotnet_waffle {
     public class Template {
 
-        public Template() { }
+        public Template() {
+            Type = TemplateType.ProjectTemplate;
+        }
+
         public Template(string name, TemplateType type, string sourceFolder) {
             if (type != TemplateType.ProjectTemplate) { throw new NotImplementedException(); }
             Name = name;
             Type = type;
             Source = TemplateSource.NewFolderSource(sourceFolder);
-        }
-
-        public Template(string name, TemplateType type, SourceType sourceType, Uri templatePath, string branchName, string relPath) {
-            if (type != TemplateType.ProjectTemplate) { throw new NotImplementedException(); }
-            Name = name;
-            Type = type;
-            Source = TemplateSource.NewGitSource(templatePath, branchName, relPath);
-        }
+        }        
 
         public string Name { get; set; }
 
@@ -55,6 +51,6 @@ namespace dotnet_waffle {
             }
 
             return template;
-        }        
+        }
     }
 }

@@ -9,7 +9,8 @@ namespace dotnet_waffle {
         public TemplateManager(TemplateSourceManager sourceManager) {
             SourceManager = sourceManager;
         }
-        private TemplateSourceManager SourceManager { get; set; }
+
+        public TemplateSourceManager SourceManager { get; set; }
            
         public IEnumerable<Template> GetTemplatesFromFolder(string folderPath, bool recurse, string filePattern = "waffle*.json") {
             List<Template> templates = new List<Template>();

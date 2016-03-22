@@ -32,18 +32,38 @@ namespace dotnet_waffle
         
         public static TemplateSource NewFolderSource(string path) {
             return new TemplateSource() {
+                Type = SourceType.Folder,
                 SourceFolder = path
             };
         }
 
-        public static TemplateSource NewGitSource(Uri url, string branchName, string relPath) {
-            throw new NotImplementedException();
+        public static TemplateSource NewGitSource(Uri url, string branchName) {
+            return new TemplateSource() {
+                Type = SourceType.Git,
+                GitUrl = url,
+                GitBranch = branchName
+            };
         }
 
         public static TemplateSource NewNuGetSource(string id, string version) {
-            throw new NotImplementedException();
+            return new TemplateSource() {
+                Type = SourceType.Package,
+                PackageName = id,
+                PackageVersion = version
+            };
         }
-
+        public string GetSourceString() {
+            switch (Type) {
+                case SourceType.Folder:
+                    return $"folder={SourceFolder}";
+                case SourceType.Git:
+                    return $"git={GitUrl} branch={GitBranch}";
+                case SourceType.Package:
+                    return $"package={PackageName} version={PackageVersion}";
+                default:
+                    throw new InvalidOperationException($"Unknown source type {Type}");
+            }
+        }
         public override bool Equals(object obj) {
             TemplateSource other = obj as TemplateSource;
 
